@@ -1,0 +1,4 @@
+NAME: Test5, AGE: 25, CITY: Lviv
+NAME: Test6, AGE: 26, CITY: Kyiv
+NAME: Test7, AGE: 27, CITY: Odesa
+NAME: Test8, AGE: 28, CITY: Charkiv
