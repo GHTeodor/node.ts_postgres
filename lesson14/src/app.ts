@@ -1,4 +1,5 @@
 import express from 'express';
+import fileUpload from 'express-fileupload';
 import { createConnection } from 'typeorm';
 import 'reflect-metadata';
 
@@ -10,6 +11,7 @@ import { cronRun } from './cron';
 global.rootDir = __dirname;
 
 const app = express();
+app.use(fileUpload());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

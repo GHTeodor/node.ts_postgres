@@ -1,23 +1,50 @@
 import { NextFunction, Request, Response } from 'express';
+import { UploadedFile } from 'express-fileupload';
 
 import {
-    authService, emailService, tokenService, userService,
+    authService, emailService, s3Service, tokenService, userService,
 } from '../services';
 import { constant, COOKIE, EmailActionEnum } from '../configs';
-import { IRequestExtended, ITokenPair } from '../interfaces';
+import { IRequestExtended } from '../interfaces';
 import { IUser } from '../entities/user';
 import { tokenRepository } from '../repositories';
+import { ErrorHandler } from '../errors';
 
 class AuthController {
-    async registration(req: Request, res: Response): Promise<Response<ITokenPair>> {
-        // const userNormalized = Object.assign(req.body, { email: req.body.email.trim().toLowerCase() });
-        const data = await authService.registration(req.body);
-        res.cookie(
-            COOKIE.nameRefreshToken,
-            data.refreshToken,
-            { maxAge: COOKIE.maxAgeRefreshToken, httpOnly: true },
-        );
-        return res.json(data);
+    async registration(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { email } = req.body;
+            const avatar = req.files?.avatar as UploadedFile;
+
+            const userFromDb = await userService.getByEmail(email);
+
+            if (userFromDb) {
+                throw new ErrorHandler(`User with email: ${email} alerady exist`);
+            }
+
+            // const userNormalized = Object.assign(req.body, { email: req.body.email.trim().toLowerCase() });
+            const createdUser = await userService.createOne(req.body);
+
+            // UPLOAD PHOTO
+            if (avatar) {
+                const sendData = await s3Service.uploadFile(avatar, 'user', createdUser.id);
+                console.log('-------sendData.Location--------');
+                console.log(sendData.Location);
+                console.log('-------sendData.Location--------');
+            }
+
+            // UPDATE USER
+            const tokenData = await authService.registration(createdUser);
+
+            res.cookie(
+                COOKIE.nameRefreshToken,
+                tokenData.refreshToken,
+                { maxAge: COOKIE.maxAgeRefreshToken, httpOnly: true },
+            );
+            res.json(tokenData);
+        } catch (e) {
+            next(e);
+        }
     }
 
     async login(req: IRequestExtended, res: Response, next: NextFunction) {

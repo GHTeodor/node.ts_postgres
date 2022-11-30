@@ -13,4 +13,9 @@ export const config = {
 
     NO_REPLY_EMAIL: process.env.NO_REPLY_EMAIL || 'CSharpyk@gmail.com',
     NO_REPLY_PASSWORD: process.env.NO_REPLY_PASSWORD || 'iglduumiuytlycbp',
+
+    S3_NAME: process.env.S3_NAME,
+    S3_REGION: process.env.S3_REGION,
+    S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+    S3_SECRET_KEY: process.env.S3_SECRET_KEY,
 };
